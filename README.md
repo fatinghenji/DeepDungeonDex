@@ -15,24 +15,18 @@ Translations happens on Crowdin to get access to the translations join the XIVQu
 ##### Progress
 German:
 ![de translation](https://img.shields.io/badge/dynamic/json?color=blue&label=de&style=flat&query=%24.progress.0.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
-![de proofreading](https://img.shields.io/badge/dynamic/json?color=green&label=de&style=flat&query=%24.progress.0.data.approvalProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
 
 French:
 ![fr translation](https://img.shields.io/badge/dynamic/json?color=blue&label=fr&style=flat&query=%24.progress.1.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
-![fr proofreading](https://img.shields.io/badge/dynamic/json?color=green&label=fr&style=flat&query=%24.progress.1.data.approvalProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
 
 Japanese:
 ![ja translation](https://img.shields.io/badge/dynamic/json?color=blue&label=ja&style=flat&query=%24.progress.2.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
-![ja proofreading](https://img.shields.io/badge/dynamic/json?color=green&label=ja&style=flat&query=%24.progress.2.data.approvalProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
 
 Korean:
 ![ko translation](https://img.shields.io/badge/dynamic/json?color=blue&label=ko&style=flat&query=%24.progress.3.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
-![ko proofreading](https://img.shields.io/badge/dynamic/json?color=green&label=ko&style=flat&query=%24.progress.3.data.approvalProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
 
 Chinese Simplified:
 ![zh-CN translation](https://img.shields.io/badge/dynamic/json?color=blue&label=zh-CN&style=flat&query=%24.progress.4.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
-![zh-CN proofreading](https://img.shields.io/badge/dynamic/json?color=green&label=zh-CN&style=flat&query=%24.progress.4.data.approvalProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
 
 Chinese Traditional:
 ![zh-TW translation](https://img.shields.io/badge/dynamic/json?color=blue&label=zh-TW&style=flat&query=%24.progress.5.data.translationProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
-![zh-TW proofreading](https://img.shields.io/badge/dynamic/json?color=green&label=zh-TW&style=flat&query=%24.progress.5.data.approvalProgress&url=https%3A%2F%2Fbadges.awesome-crowdin.com%2Fstats-15354148-526558.json)
