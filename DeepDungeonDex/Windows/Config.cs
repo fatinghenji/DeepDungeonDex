@@ -1,5 +1,4 @@
 using System.Numerics;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DeepDungeonDex.Windows;
 
@@ -7,8 +6,9 @@ public class Config : Window, IDisposable
 {
     private StorageHandler _handler;
     private Requests _requests;
-    private DalamudPluginInterface _pluginInterface;
+    private IDalamudPluginInterface _pluginInterface;
     private IServiceProvider _provider;
+    private Font.Font _font;
     private float _opacity;
     private bool _clickthrough;
     private bool _hideRed;
@@ -17,13 +17,18 @@ public class Config : Window, IDisposable
     private int _loc;
     private bool _loadAll;
     private bool _hideFloor;
+    private ContentType _contentTypes = ContentType.DeepDungeon | ContentType.Eureka | ContentType.IslandSanctuary | ContentType.Diadem | ContentType.Bozja | ContentType.None;
+    private ContentType[] _allContentTypes = Array.Empty<ContentType>();
+    private ContentType[] AllContentTypes => _allContentTypes.Any() ? _allContentTypes : _allContentTypes = Enum.GetValues(typeof(ContentType)).Cast<ContentType>().ToArray();
 
-    public Config(DalamudPluginInterface pluginInterface, StorageHandler handler, CommandHandler command, Requests requests, IServiceProvider provider) : base("DeepDungeonDex Config", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse)
+
+    public Config(IDalamudPluginInterface pluginInterface, StorageHandler handler, CommandHandler command, Requests requests, IServiceProvider provider, Font.Font font) : base("MonsterDex Config", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse)
     {
         _handler = handler;
         _requests = requests;
         _provider = provider;
         _pluginInterface = pluginInterface;
+        _font = font;
         var _config = _handler.GetInstance<Configuration>()!;
         _config.OnChange += OnChange;
         SizeConstraints = new WindowSizeConstraints
@@ -74,7 +79,7 @@ public class Config : Window, IDisposable
         var _localeKeys = _handler.GetInstance<LocaleKeys>()!;
         var lang = _localeKeys.LocaleDictionary.Keys.ToArray()[_config.PrevLocale];
         var _locale = (Locale)_handler.GetInstance($"{lang}/main.yml")!;
-        ImGui.PushFont(Font.Font.RegularFont);
+        using var _ = Font.Font.RegularFont.Push();
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize("Opacity").X);
         if (ImGui.SliderFloat(_locale.GetLocale("Opacity"), ref _opacity, 0.0f, 1.0f))
         {
@@ -104,20 +109,6 @@ public class Config : Window, IDisposable
             _config.Debug = _debug;
         }
 
-        if (ImGui.Checkbox(_locale.GetLocale("LoadAllFont"), ref _loadAll))
-        {
-            _config.LoadAll = _loadAll;
-            _pluginInterface.UiBuilder.RebuildFonts();
-        }
-        if (ImGui.IsItemHovered())
-        {
-            ImGui.BeginTooltip();
-            ImGui.PushTextWrapPos(300f);
-            ImGui.TextWrapped(_locale.GetLocale("LoadAllFontWarning"));
-            ImGui.PopTextWrapPos();
-            ImGui.EndTooltip();
-        };
-
         var locales = _localeKeys.LocaleDictionary.Values.ToArray();
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.CalcTextSize("Locale").X);
         if (ImGui.Combo("Locale", ref _loc, locales, locales.Length))
@@ -125,11 +116,30 @@ public class Config : Window, IDisposable
             _config.Locale = _loc;
             _requests.ChangeLanguage();
         }
+        ImGui.Columns(2, null, false);
+        ImGui.TextUnformatted(_locale.GetLocale("ContentTypes"));
+        foreach (var contentType in AllContentTypes)
+        {
+            if (!_contentTypes.HasFlag(contentType))
+                continue;
+
+            var enabled = _config.EnabledContentTypes.HasFlag(contentType);
+            ImGui.NextColumn();
+            if (!ImGui.Checkbox(_locale.GetLocale($"ContentType{contentType:G}"), ref enabled))
+                continue;
+
+            if (enabled)
+                _config.EnabledContentTypes |= contentType;
+            else
+                _config.EnabledContentTypes &= ~contentType;
+        }
+        ImGui.Columns(1);
         ImGui.NewLine();
         if (ImGui.Button(_locale.GetLocale("Save")))
         {
             IsOpen = false;
             _config.Save(_handler.GetFilePath(_config.GetType()));
+            _font.RegisterNewBuild(_config.FontSize);
         }
         ImGui.SameLine();
         if (ImGui.IsItemHovered())
@@ -145,6 +155,5 @@ public class Config : Window, IDisposable
         ImGui.PushStyleColor(ImGuiCol.ButtonActive, 0xFF5E5BAA);
         ImGui.PushStyleColor(ImGuiCol.ButtonHovered, 0xFF5E5BDD);
         ImGui.PopStyleColor(3);
-        ImGui.PopFont();
     }
 }

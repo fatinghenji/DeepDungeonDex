@@ -1,0 +1,4 @@
+[submodule "DeepDungeonDexConsole/data"]
+	path = DeepDungeonDexConsole/data
+	url = https://github.com/wolfcomp/MonsterDex.git
+	branch = data

@@ -15,6 +15,14 @@ body:
       placeholder: ex. 5429
     validations:
       required: true
+  - type: input
+    id: content_type
+    attributes:
+      label: Content Type
+      description: The content type where the mob is located
+      placeholder: ex. DeepDungeon
+    validations:
+      required: true
   - type: dropdown
     id: threatlevel
     attributes:
@@ -33,6 +41,8 @@ body:
         - Sound
         - Proximity
         - Boss
+        - Bloodlust
+        - Magic
   - type: checkboxes
     id: vulnerabilities
     attributes:

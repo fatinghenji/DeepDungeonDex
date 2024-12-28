@@ -15,7 +15,7 @@ public class Floor : Window, IDisposable
     private byte _debug;
     private string _dataPath = "";
 
-    public Floor(StorageHandler storage, CommandHandler command, IFramework framework, ICondition condition, IClientState state, IPluginLog log, AddonAgent addon) : base("DeepDungeonDex FloorGuide", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoTitleBar)
+    public Floor(StorageHandler storage, CommandHandler command, IFramework framework, ICondition condition, IClientState state, IPluginLog log, AddonAgent addon) : base("MonsterDex FloorGuide", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoTitleBar)
     {
         _storage = storage;
         _framework = framework;
@@ -26,7 +26,7 @@ public class Floor : Window, IDisposable
         command.AddCommand("debug_floor", args =>
         {
             var argArr = args.Split(' ');
-            if (!byte.TryParse(argArr[0], out var id) || !uint.TryParse(argArr[1], out var ter) || ter is > 2 or < 0)
+            if (!byte.TryParse(argArr[0], out var id) || !ushort.TryParse(argArr[1], out var ter))
             {
                 if (argArr[0] == "print")
                 {
@@ -41,18 +41,12 @@ public class Floor : Window, IDisposable
             }
 
             _debug = id;
-#pragma warning disable CS8509
-            _dataPath = ter switch
-#pragma warning restore CS8509
-            {
-                0 => "PotD",
-                1 => "HoH",
-                2 => "EO"
-            };
+            TerritoryChanged(ter);
             _locale = _storage.GetInstance<Locale>(_dataPath + "/Floors.yml");
             IsOpen = true;
 
         }, show: false);
+        command.AddCommand(new[] { "enable_floor", "e_floor", "enable_f", "ef" }, _addon.Restart, "Resets the floor getter function to try again");
         var config = _storage.GetInstance<Configuration>()!;
         SizeConstraints = new WindowSizeConstraints
         {
@@ -63,18 +57,21 @@ public class Floor : Window, IDisposable
         framework.Update += GetData;
         config.OnChange += ConfigChanged;
         state.TerritoryChanged += TerritoryChanged;
-        TerritoryChanged(state.TerritoryType);
+        storage.StorageChanged += StorageChanged;
+    }
+
+    private void StorageChanged(StorageEventArgs obj)
+    {
+        if (obj.StorageType == typeof(Territories) && obj.StorageType == typeof(Locale))
+            TerritoryChanged(_clientState.TerritoryType);
     }
 
     private void TerritoryChanged(ushort e)
     {
-        _dataPath = e switch
-        {
-            >= 561 and <= 565 or >= 593 and <= 607 => "PotD",
-            >= 770 and <= 775 or >= 782 and <= 785 => "HoH",
-            >= 1099 and <= 1108 => "EO",
-            _ => ""
-        };
+        var territories = _storage.GetInstance<Territories>();
+        if (territories == null)
+            return;
+        _dataPath = territories.GetTerritoryName(e, _log);
         _locale = _storage.GetInstance<Locale>(_dataPath + "/Floors.yml");
     }
 
@@ -83,10 +80,10 @@ public class Floor : Window, IDisposable
         if (_debug != 0)
             return;
 
-        if (_condition[ConditionFlag.InDeepDungeon])
+        if (_dataPath != "")
         {
             var config = _storage.GetInstance<Configuration>()!;
-            if(!_addon.Disabled && _dataPath != "" && !config.HideFloor && _addon.Floor % 10 != 0 && _storage.GetInstance(_dataPath + "/Floors.yml") != null)
+            if (!_addon.DirectorDisabled && !config.HideFloor && _addon.Floor % 10 != 0 && _storage.GetInstance(_dataPath + "/Floors.yml") != null)
                 IsOpen = true;
             else
                 IsOpen = false;
@@ -112,20 +109,20 @@ public class Floor : Window, IDisposable
 
     public override void Draw()
     {
-        var remap = (FloorData)((Storage.Storage)_storage.GetInstance(_dataPath + "/Floors.yml")!).Value;
+        var remap = (FloorData)_storage.GetInstance(_dataPath + "/Floors.yml")!;
         var floor = _debug == 0 ? _addon.Floor : _debug;
         floor = remap.FloorDictionary.TryGetValue(floor, out var f) ? f : floor;
-        ImGui.PushFont(Font.Font.RegularFont);
+        using var _ = Font.Font.RegularFont.Push();
         try
         {
             ImGui.Text("Floor Help");
-            ImGui.TextUnformatted(_locale?.GetLocale($"{_dataPath}{floor}"));
+            ImGui.TextUnformatted(_locale?.GetLocale($"{_dataPath[(_dataPath.LastIndexOf("/", StringComparison.Ordinal) + 1)..]}{floor}"));
         }
-        catch
+        catch (Exception e)
         {
+            _log.Error(e, "Error trying to draw floor guide.");
             // ignored
         }
-        ImGui.PopFont();
     }
 
     public void Dispose()
